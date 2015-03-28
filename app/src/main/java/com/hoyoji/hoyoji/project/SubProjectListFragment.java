@@ -346,13 +346,13 @@ public class SubProjectListFragment extends HyjUserListFragment {
 				numericView.setPrefix(project.getCurrencySymbol());
 			} else if(depositBalance < 0){
 				numericView.setTextColor(Color.parseColor(HyjApplication.getInstance().getCurrentUser().getUserData().getExpenseColor()));
-				numericView.setPrefix("支出"+project.getCurrencySymbol());
+				numericView.setPrefix(project.getCurrencySymbol());
 			}else{
 				numericView.setTextColor(Color.parseColor(HyjApplication.getInstance().getCurrentUser().getUserData().getIncomeColor()));
-				numericView.setPrefix("收入"+project.getCurrencySymbol());
+				numericView.setPrefix(project.getCurrencySymbol());
 			}
 			
-			numericView.setNumber(Math.abs(depositBalance));
+			numericView.setNumber(depositBalance);
 			return true;
 		} else if(view.getId() == R.id.projectListItem_action_viewSubProjects){
 			if(!project.getSubProjects().isEmpty()){

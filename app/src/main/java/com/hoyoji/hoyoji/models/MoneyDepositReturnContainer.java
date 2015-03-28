@@ -342,7 +342,7 @@ public class MoneyDepositReturnContainer extends HyjModel {
 		this.mAddress = mAddress;
 	}
 
-	@Override
+
 	public void validate(HyjModelEditor<?> modelEditor) {
 		if (this.getDate() == null) {
 			modelEditor.setValidationError("date",
@@ -536,7 +536,8 @@ public class MoneyDepositReturnContainer extends HyjModel {
 		ProjectShareAuthorization psa = apportion.getProjectShareAuthorization();
 		HyjModelEditor<ProjectShareAuthorization> psaEditor = psa.newModelEditor();
 		psaEditor.getModelCopy().setActualTotalPayback(psa.getActualTotalPayback() - apportion.getAmount0()*mMoneyDepositReturnContainerEditor.getModel().getExchangeRate());
-		psaEditor.save();
+        psaEditor.getModelCopy().setDepositTotal(psa.getDepositTotal() + apportion.getAmount0()*mMoneyDepositReturnContainerEditor.getModel().getExchangeRate());
+        psaEditor.save();
 
 		List<MoneyReturn> moneyReturns = new Select().from(MoneyReturn.class).where("moneyDepositReturnApportionId=?", apportion.getId()).execute();
 		for(MoneyReturn moneyReturn : moneyReturns){
@@ -657,9 +658,11 @@ public class MoneyDepositReturnContainer extends HyjModel {
 					HyjModelEditor<ProjectShareAuthorization> newPsaEditor = newPsa.newModelEditor();
 					if(apportion.get_mId() == null) {
 						newPsaEditor.getModelCopy().setActualTotalPayback(newPsa.getActualTotalPayback() + apportionEditor.getModelCopy().getAmount0()*mMoneyDepositReturnContainerEditor.getModelCopy().getExchangeRate());
-					} else if(mMoneyDepositReturnContainerEditor.getModelCopy().getProjectId().equals(mMoneyDepositReturnContainerEditor.getModel().getProjectId())){
+                        newPsaEditor.getModelCopy().setDepositTotal(newPsa.getDepositTotal() - apportionEditor.getModelCopy().getAmount0()*mMoneyDepositReturnContainerEditor.getModelCopy().getExchangeRate());
+                    } else if(mMoneyDepositReturnContainerEditor.getModelCopy().getProjectId().equals(mMoneyDepositReturnContainerEditor.getModel().getProjectId())){
 						newPsaEditor.getModelCopy().setActualTotalPayback(newPsa.getActualTotalPayback() - oldApportionAmount*mMoneyDepositReturnContainerEditor.getModel().getExchangeRate() + apportionEditor.getModelCopy().getAmount0()*mMoneyDepositReturnContainerEditor.getModelCopy().getExchangeRate());
-					} else {
+                        newPsaEditor.getModelCopy().setDepositTotal(newPsa.getDepositTotal() + oldApportionAmount*mMoneyDepositReturnContainerEditor.getModel().getExchangeRate() - apportionEditor.getModelCopy().getAmount0()*mMoneyDepositReturnContainerEditor.getModelCopy().getExchangeRate());
+                    } else {
 						ProjectShareAuthorization oldPsa;
 						if(apportion.getFriendUserId() != null){
 							oldPsa = new Select().from(ProjectShareAuthorization.class).where("projectId=? AND friendUserId AND state <> 'Delete'", mMoneyDepositReturnContainerEditor.getModel().getProjectId(), apportion.getFriendUserId()).executeSingle();
@@ -668,8 +671,10 @@ public class MoneyDepositReturnContainer extends HyjModel {
 						}
 						HyjModelEditor<ProjectShareAuthorization> oldPsaEditor = oldPsa.newModelEditor();
 						oldPsaEditor.getModelCopy().setActualTotalPayback(oldPsa.getActualTotalPayback() - oldApportionAmount*mMoneyDepositReturnContainerEditor.getModel().getExchangeRate());
-						newPsaEditor.getModelCopy().setActualTotalPayback(newPsa.getActualTotalPayback() + apportionEditor.getModelCopy().getAmount0()*mMoneyDepositReturnContainerEditor.getModelCopy().getExchangeRate());
-					}
+                        oldPsaEditor.getModelCopy().setDepositTotal(oldPsa.getDepositTotal() + oldApportionAmount*mMoneyDepositReturnContainerEditor.getModel().getExchangeRate());
+                        newPsaEditor.getModelCopy().setActualTotalPayback(newPsa.getActualTotalPayback() + apportionEditor.getModelCopy().getAmount0()*mMoneyDepositReturnContainerEditor.getModelCopy().getExchangeRate());
+                        newPsaEditor.getModelCopy().setDepositTotal(newPsa.getDepositTotal() - apportionEditor.getModelCopy().getAmount0()*mMoneyDepositReturnContainerEditor.getModelCopy().getExchangeRate());
+                    }
 					newPsaEditor.save();
 					
 					MoneyReturn moneyReturn = null;

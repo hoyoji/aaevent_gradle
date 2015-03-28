@@ -666,10 +666,10 @@ public class EventMemberListFragment extends HyjUserListFragment {
 						return true;
 					}
 				}
-				Double settlement = psa.getSettlement();
+				Double depositBalance = psa.getDepositBalance();
 				String currencySymbol = psa.getProject().getCurrencySymbol();
 				textView.setText("会费结余:" + currencySymbol
-						+ HyjUtil.toFixed2(settlement));
+						+ HyjUtil.toFixed2(depositBalance));
 			}
 			return true;
 		}

@@ -81,7 +81,10 @@ public class ProjectShareAuthorization extends HyjModel {
 //	actualTotalPayback : "REAL NOT NULL",
 	@Column(name = "actualTotalPayback")
 	private Double mActualTotalPayback = 0.0;
-	
+
+    @Column(name = "depositTotal")
+    private Double mDepositTotal = 0.0;
+
 //	apportionedTotalIncome : "REAL NOT NULL",
 	@Column(name = "apportionedTotalIncome")
 	private Double mApportionedTotalIncome = 0.0;
@@ -96,7 +99,7 @@ public class ProjectShareAuthorization extends HyjModel {
 	
 //	apportionedTotalLend : "REAL NOT NULL",
 	@Column(name = "apportionedTotalLend")
-	private Double mApportionedTotalLend = 0.0;
+	private Double mApportionedTotalLend1 = 0.0;
 	
 //	apportionedTotalReturn : "REAL NOT NULL",
 	@Column(name = "apportionedTotalReturn")
@@ -523,6 +526,14 @@ public class ProjectShareAuthorization extends HyjModel {
 		this.mActualTotalLend = HyjUtil.toFixed2(mActualTotalLend);
 	}
 
+    public Double getDepositTotal() {
+        return mDepositTotal;
+    }
+
+    public void setDepositTotal(Double depositTotal) {
+        this.mDepositTotal = HyjUtil.toFixed2(depositTotal);
+    }
+
 	public Double getActualTotalReturn() {
 		return mActualTotalReturn;
 	}
@@ -564,11 +575,11 @@ public class ProjectShareAuthorization extends HyjModel {
 	}
 
 	public Double getApportionedTotalLend1() {
-		return mApportionedTotalLend;
+		return mApportionedTotalLend1;
 	}
 
-	public void setApportionedTotalLend(Double mApportionedTotalLend) {
-		this.mApportionedTotalLend = HyjUtil.toFixed2(mApportionedTotalLend);
+	public void setApportionedTotalLend1(Double mApportionedTotalLend) {
+		this.mApportionedTotalLend1 = HyjUtil.toFixed2(mApportionedTotalLend);
 	}
 
 	public Double getApportionedTotalReturn() {
@@ -1000,12 +1011,16 @@ public class ProjectShareAuthorization extends HyjModel {
 	}
 
 	public Double getApportionTotal() {
-		return mApportionedTotalExpense - mApportionedTotalIncome + mApportionedTotalLend - mApportionedTotalPayback - mApportionedTotalBorrow + mApportionedTotalReturn;
+		return mApportionedTotalExpense - mApportionedTotalIncome + mApportionedTotalLend1 - mApportionedTotalPayback - mApportionedTotalBorrow + mApportionedTotalReturn;
 	}
 
 	public Double getSettlement() {
 		return this.getActualTotal() - this.getApportionTotal();
 	}	
+
+    public Double getDepositBalance(){
+        return this.getDepositTotal() + this.getApportionedTotalIncome() - this.getActualTotalExpense();
+    }
 
 	public void setCreatorId(String id){
 		m_creatorId = id;
@@ -1061,7 +1076,8 @@ public class ProjectShareAuthorization extends HyjModel {
 //		sharedTotalLend : 0,
 //		sharedTotalReturn : 0,
 //		sharedTotalPayback : 0,
-		
+
+        jsonObj.remove("depositTotal");
 		jsonObj.remove("actualTotalIncome");
 		jsonObj.remove("actualTotalExpense");
 		jsonObj.remove("actualTotalBorrow");

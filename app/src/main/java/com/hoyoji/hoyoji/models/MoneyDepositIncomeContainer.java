@@ -531,7 +531,8 @@ public class MoneyDepositIncomeContainer extends HyjModel {
 		ProjectShareAuthorization psa = moneyDepositIncomeApportion.getProjectShareAuthorization();
 		HyjModelEditor<ProjectShareAuthorization> psaEditor = psa.newModelEditor();
 		psaEditor.getModelCopy().setActualTotalLend(psa.getActualTotalLend() - moneyDepositIncomeApportion.getAmount0()*mMoneyDepositIncomeContainerEditor.getModel().getExchangeRate());
-		psaEditor.save();
+        psaEditor.getModelCopy().setDepositTotal(psa.getDepositTotal() - moneyDepositIncomeApportion.getAmount0()*mMoneyDepositIncomeContainerEditor.getModel().getExchangeRate());
+        psaEditor.save();
 		
 		List<MoneyBorrow> moneyBorrows = new Select().from(MoneyBorrow.class).where("moneyDepositIncomeApportionId=?", moneyDepositIncomeApportion.getId()).execute();
 		for(MoneyBorrow moneyBorrow : moneyBorrows){
@@ -570,34 +571,6 @@ public class MoneyDepositIncomeContainer extends HyjModel {
             
 				if(api.getState() == ApportionItem.DELETED ){
 					deleteApportion(apportion, mMoneyDepositIncomeContainerEditor);
-					
-//					// 维护缴款人的 ProjectShareAuthorization
-//					ProjectShareAuthorization psa = api.getProjectShareAuthorization();
-//					HyjModelEditor<ProjectShareAuthorization> psaEditor = psa.newModelEditor();
-//					psaEditor.getModelCopy().setActualTotalLend(psa.getActualTotalLend() - apportion.getAmount0()*mMoneyDepositIncomeContainerEditor.getModel().getExchangeRate());
-//					psaEditor.save();
-//					
-//					List<MoneyBorrow> moneyBorrows = new Select().from(MoneyBorrow.class).where("moneyDepositIncomeApportionId=?", apportion.getId()).execute();
-//					for(MoneyBorrow moneyBorrow : moneyBorrows){
-//						if(HyjApplication.getInstance().getCurrentUser().getId().equals(moneyBorrow.getOwnerUserId())) {
-//							MoneyAccount debtAccount = null;
-//							if(mMoneyDepositIncomeContainerEditor.getModel().getFinancialOwnerUserId() != null){
-//								debtAccount = MoneyAccount.getDebtAccount(moneyBorrow.getProject().getCurrencyId(), null, mMoneyDepositIncomeContainerEditor.getModel().getFinancialOwnerUserId());
-//							} else {
-//								debtAccount = MoneyAccount.getDebtAccount(moneyBorrow.getProject().getCurrencyId(), moneyBorrow.getLocalFriendId(), moneyBorrow.getFriendUserId());
-//							}
-//						
-//							HyjModelEditor<MoneyAccount> debtAccountEditor = debtAccount.newModelEditor();
-//							debtAccountEditor.getModelCopy().setCurrentBalance(debtAccount.getCurrentBalance() + moneyBorrow.getProjectAmount());
-//							debtAccountEditor.save(); 
-//						}
-//						moneyBorrow.delete();
-//					} 
-//					List<MoneyLend> moneyLends = new Select().from(MoneyLend.class).where("moneyDepositIncomeApportionId=?", apportion.getId()).execute();
-//					for(MoneyLend moneyLend : moneyLends){
-//						moneyLend.delete();
-//					}
-//					apportion.delete();
 				} else {
 					HyjModelEditor<MoneyDepositIncomeApportion> apportionEditor = apportion.newModelEditor();
 					Double oldApportionAmount = apportionEditor.getModel().getAmount0();
@@ -684,9 +657,11 @@ public class MoneyDepositIncomeContainer extends HyjModel {
 					HyjModelEditor<ProjectShareAuthorization> newPsaEditor = newPsa.newModelEditor();
 					if(apportion.get_mId() == null) {
 						newPsaEditor.getModelCopy().setActualTotalLend(newPsa.getActualTotalLend() + apportionEditor.getModelCopy().getAmount0()*mMoneyDepositIncomeContainerEditor.getModelCopy().getExchangeRate());
-					} else if(mMoneyDepositIncomeContainerEditor.getModelCopy().getProjectId().equals(mMoneyDepositIncomeContainerEditor.getModel().getProjectId())){
+                        newPsaEditor.getModelCopy().setDepositTotal(newPsa.getDepositTotal() + apportionEditor.getModelCopy().getAmount0()*mMoneyDepositIncomeContainerEditor.getModelCopy().getExchangeRate());
+                    } else if(mMoneyDepositIncomeContainerEditor.getModelCopy().getProjectId().equals(mMoneyDepositIncomeContainerEditor.getModel().getProjectId())){
 						newPsaEditor.getModelCopy().setActualTotalLend(newPsa.getActualTotalLend() - oldApportionAmount*mMoneyDepositIncomeContainerEditor.getModel().getExchangeRate() + apportionEditor.getModelCopy().getAmount0()*mMoneyDepositIncomeContainerEditor.getModelCopy().getExchangeRate());
-					} else {
+                        newPsaEditor.getModelCopy().setDepositTotal(newPsa.getDepositTotal() - oldApportionAmount*mMoneyDepositIncomeContainerEditor.getModel().getExchangeRate() + apportionEditor.getModelCopy().getAmount0()*mMoneyDepositIncomeContainerEditor.getModelCopy().getExchangeRate());
+                    } else {
 						ProjectShareAuthorization oldPsa;
 						if(apportion.getFriendUserId() != null){
 							oldPsa = new Select().from(ProjectShareAuthorization.class).where("projectId=? AND friendUserId AND state <> 'Delete'", mMoneyDepositIncomeContainerEditor.getModel().getProjectId(), apportion.getFriendUserId()).executeSingle();
@@ -695,8 +670,10 @@ public class MoneyDepositIncomeContainer extends HyjModel {
 						}
 						HyjModelEditor<ProjectShareAuthorization> oldPsaEditor = oldPsa.newModelEditor();
 						oldPsaEditor.getModelCopy().setActualTotalLend(oldPsa.getActualTotalLend() - oldApportionAmount*mMoneyDepositIncomeContainerEditor.getModel().getExchangeRate());
-						newPsaEditor.getModelCopy().setActualTotalLend(newPsa.getActualTotalLend() + apportionEditor.getModelCopy().getAmount0()*mMoneyDepositIncomeContainerEditor.getModelCopy().getExchangeRate());
-					}
+                        oldPsaEditor.getModelCopy().setDepositTotal(oldPsa.getDepositTotal() - oldApportionAmount*mMoneyDepositIncomeContainerEditor.getModel().getExchangeRate());
+                        newPsaEditor.getModelCopy().setActualTotalLend(newPsa.getActualTotalLend() + apportionEditor.getModelCopy().getAmount0()*mMoneyDepositIncomeContainerEditor.getModelCopy().getExchangeRate());
+                        newPsaEditor.getModelCopy().setDepositTotal(newPsa.getDepositTotal() + apportionEditor.getModelCopy().getAmount0()*mMoneyDepositIncomeContainerEditor.getModelCopy().getExchangeRate());
+                    }
 					newPsaEditor.save();
 					
 					MoneyBorrow moneyBorrow = null;
